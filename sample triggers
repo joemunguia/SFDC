@@ -1,0 +1,17 @@
+trigger Task_End_Date on Tasks__c (before insert) {
+    Set<Id> task_owners = new Set<Id>();
+
+    for (Tasks__c o : Trigger.new) {
+        task_owners.add(o.OwnerId);
+    }
+
+    List<Tasks__c> other_tasks = [SELECT Id, OwnerId, End_Date__c
+                                  FROM Tasks__c
+                                  WHERE OwnerId IN :task_owners];
+
+    for (Tasks__c open_tasks : other_tasks) {
+        if (open_tasks.End_Date__c == null) {
+            open_tasks.End_Date__c = datetime.now();
+        }
+    }
+}
